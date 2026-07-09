@@ -1,0 +1,21 @@
+<input id="msg">
+<button onclick="sendMsg()">Send</button>
+
+<div id="chat"></div>
+
+<script>
+
+const socket = new WebSocket(
+"ws://127.0.0.1:8000/ws/chat/"
+);
+
+socket.onmessage = function(e){
+    document.getElementById("chat").innerHTML +=
+    "<p>"+e.data+"</p>";
+}
+
+function sendMsg(){
+    socket.send(document.getElementById("msg").value)
+}
+
+</script>
