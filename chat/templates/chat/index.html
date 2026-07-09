@@ -5,17 +5,23 @@
 
 <script>
 
-const socket = new WebSocket(
-"ws://127.0.0.1:8000/ws/chat/"
-);
+const socket = new WebSocket("ws://127.0.0.1:8000/ws/chat/");
 
-socket.onmessage = function(e){
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
     document.getElementById("chat").innerHTML +=
-    "<p>"+e.data+"</p>";
-}
+        "<p>" + data.message + "</p>";
+};
 
-function sendMsg(){
-    socket.send(document.getElementById("msg").value)
+function sendMsg() {
+    const message = document.getElementById("msg").value;
+
+    socket.send(
+        JSON.stringify({
+            message: message
+        })
+    );
 }
 
 </script>
