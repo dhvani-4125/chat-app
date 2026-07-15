@@ -1,27 +1,49 @@
 <input id="msg">
 <button onclick="sendMsg()">Send</button>
 
+<div id="typing"></div>
 <div id="chat"></div>
 
 <script>
 
+const username = prompt("Enter your username:");
 const socket = new WebSocket("ws://127.0.0.1:8000/ws/chat/");
+const input = document.getElementById("msg");
+const typing = document.getElementById("typing");
 
+input.addEventListener("input", () => {
+    socket.send(
+        JSON.stringify({
+            type: "typing",
+            username: username
+        })
+    );
+});
 socket.onmessage = function(e) {
     const data = JSON.parse(e.data);
 
-    document.getElementById("chat").innerHTML +=
-        "<p>" + data.message + "</p>";
+    if(data.type === "message"){
+        document.getElementById("chat").innerHTML += `<p><b>${data.username}:</b> ${data.message}</p>`;
+
+        typing.innerHTML = "";
+    }
+
+    if(data.type === "typing"){
+        typing.innerHTML = data.username + "'s typing...";
+    }
+
 };
 
-function sendMsg() {
-    const message = document.getElementById("msg").value;
+function sendMsg(){
 
     socket.send(
         JSON.stringify({
-            message: message
+            type: "message",
+            username: username,
+            message: document.getElementById("msg").value
         })
     );
-}
 
+    document.getElementById("msg").value = "";
+}
 </script>

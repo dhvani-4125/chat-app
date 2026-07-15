@@ -21,22 +21,42 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def receive(self, text_data):
-        print("Received:", repr(text_data))
         data = json.loads(text_data)
 
-        message = data["message"]
+        message_type = data["type"]
 
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                "type": "chat_message",
-                "message": message,
-            }
-        )
+        if message_type == "message":
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "chat_message",
+                    "message": data["message"],
+                    "username": data["username"]
+                }
+            )
+
+        elif message_type == "typing":
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "typing_indicator",
+                    "username": data["username"],
+                }
+            )
 
     async def chat_message(self, event):
-        message = event["message"]
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "message",
+                    "message": event["message"],
+                    "username": event["username"]
+                }
+            )
+        )
 
+    async def typing_indicator(self, event):
         await self.send(text_data=json.dumps({
-            "message": message
+            "type": "typing",
+            "username": event["username"]
         }))
